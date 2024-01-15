@@ -1,0 +1,194 @@
+---
+title: "Data Scraping"
+author: "Karim"
+date: "2023-10-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=False, message=False}
+library(tidyverse)
+```
+
+### Opening Data
+
+```{r}
+defense_2023 = read.csv("Def2023.csv")
+defense_2022 = read.csv("Def2022.csv")
+defense_2021 = read.csv("Def2021.csv")
+defense_2020 = read.csv("Def2020.csv")
+defense_2019 = read.csv("Def2019.csv")
+defense_2018 = read.csv("Def2018.csv")
+
+attack_2023 = read.csv("Att2023.csv")
+attack_2022 = read.csv("Att2022.csv")
+attack_2021 = read.csv("Att2021.csv")
+attack_2020 = read.csv("Att2020.csv")
+attack_2019 = read.csv("Att2019.csv")
+attack_2018 = read.csv("Att2018.csv")
+
+pass_2023 = read.csv("Pas2023.csv")
+pass_2022 = read.csv("Pas2022.csv")
+pass_2021 = read.csv("Pas2021.csv")
+pass_2020 = read.csv("Pas2020.csv")
+pass_2019 = read.csv("Pas2019.csv")
+pass_2018 = read.csv("Pas2018.csv")
+```
+
+```{r}
+#Data Row for Missing Data
+missing = data.frame(a = c("Tottenham Hotspur", "Tottenham Hotspur"),
+                b = c(3, 3),
+                c = c("Crystal Palace", "Crystal Palace"),
+                d = c(0, 0),
+                f = c(2, 5), 
+                g = c(15/23, 10/18),
+                i = c(16, 12))
+
+colnames(missing) = c("h_team", "h_score", "a_team", "a_score", "shots_blocked", "tackle_success", "pass_blocked")
+
+```
+
+### Function to clean defense data
+
+```{r}
+clean_data = function(def){
+  df_new = def %>%
+    select(c(5, 7, 12, 14, 21, 23, 24, 33, 34, 35)) %>%
+    mutate(tackle_success = TklW_Tackles / Tkl_Tackles,
+           pass_blocked = Pass_Blocks + Int
+    ) %>%
+    select(-c(5:7, 9, 10)) %>%
+    rename(c(h_team = Home_Team, 
+            a_team = Away_Team,
+            h_score = Home_Score, 
+            a_score = Away_Score,
+            shots_blocked = Sh_Blocks))
+  return(df_new)
+}
+```
+
+### Function to flip attack and pass rows
+
+```{r}
+swap_index = function(v){
+  n = length(v)
+  odd_indices = seq(1, n, by = 2)
+  even_indices = seq(2, n, by = 2)
+  v_swapped = v
+  v_swapped[odd_indices] = v[even_indices]
+  v_swapped[even_indices] = v[odd_indices]
+  return(v_swapped)
+}
+```
+
+```{r}
+outcome = function(score1, score2){
+  outcome = c()
+  for (i in 1:length(score1)){
+    if (score1[i] > score2[i]){
+      outcome = c(outcome, "W")
+      } else if (score1[i] == score2[i]){
+        outcome = c(outcome, "D")
+        } else {
+          outcome = c(outcome, "L")
+          }
+  }
+  return(outcome)
+}
+```
+
+
+
+### Function to combine rows with "home" and "away" data for the same game.
+
+```{r}
+merge_rows = function(df){
+  df_odd = df[seq(1, nrow(df), by = 2), ]
+  df_even = df[seq(2, nrow(df), by = 2), ]
+  
+  df_odd = df_odd %>%
+    mutate(outcome = outcome(h_score, a_score)) %>%
+    rename(team = h_team) %>%
+    select(c(1, 5, 6, 7, 8))
+  
+  df_even = df_even %>%
+    mutate(outcome = outcome(a_score, h_score)) %>%
+    rename(team = a_team) %>%
+    select(c(3, 5, 6, 7, 8))
+
+  df_new = data.frame(matrix(ncol = ncol(df_odd), nrow = nrow(df)))
+  df_new[seq(1, nrow(df), by = 2), ] = df_odd
+  df_new[seq(2, nrow(df), by = 2), ] =  df_even
+  
+  colnames(df_new) = c("team", "shots_blocked", "tackle_success", "passes_blocked", "outcome") 
+  
+  return(df_new)
+}
+```
+
+
+### Creating a list of defensive, attacking, and passing data for 6 years.
+
+```{r}
+def = list(defense_2023, defense_2022, defense_2021, defense_2020, defense_2019, defense_2018)
+att = list(attack_2023, attack_2022, attack_2021, attack_2020, attack_2019, attack_2018)
+pas = list(pass_2023, pass_2022, pass_2021, pass_2020, pass_2019, pass_2018)
+```
+
+### Main()
+
+#### Cleaning defensive data to have only data I need
+
+```{r}
+clean_d = list()
+for (i in 1:6){
+  df = clean_data(def[[i]])
+  clean_d = append(clean_d, list(df))
+}
+```
+
+#### Inserting the missing data for defense_2022
+
+```{r}
+clean_d[[2]] = rbind(clean_d[[2]][1:348,], missing, clean_d[[2]][-c(1:348),])
+rownames(clean_d[[2]]) = NULL
+```
+
+#### Using Attack and Pass data to calculate the ratios of shots and passes blocked.
+
+```{r}
+clean = list()
+for (i in 1:6){
+  df = clean_d[[i]] %>%
+    mutate(shots_blocked = shots_blocked / swap_index(att[[i]]$Sh),
+           pass_blocked = pass_blocked / swap_index(pas[[i]]$Att_Total)
+    )
+  df_rows_combined = merge_rows(df)
+  df_rows_combined$outcome <- factor(df_rows_combined$outcome)
+  clean = append(clean, list(df_rows_combined))
+}
+
+View(clean[[1]])
+```
+
+#### Then, merging rows of each data set.
+
+#### Merging all rows
+
+```{r}
+final = bind_rows(clean[[1]], clean[[2]], clean[[3]], clean[[4]], clean[[5]], clean[[6]]) 
+
+rows_with_na <- final[is.na(final$shots_blocked), ]
+
+final$shots_blocked <- ifelse(is.na(final$shots_blocked), 0, final$shots_blocked)
+```
+
+#### Saving data as csv
+
+```{r}
+write.csv(final, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\final2.csv", row.names=TRUE)
+```

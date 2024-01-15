@@ -1,0 +1,145 @@
+---
+title: "Analysis 2"
+author: "Karim"
+date: "2023-11-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+library(ggfortify)
+library(gridExtra)
+library(ggpattern)
+```
+
+#### Opening the Dataset
+```{r}
+final = read.csv("Supplementary Data File 1.csv")
+final = final[, -1]
+```
+
+#### Finding number of W, D, L
+
+```{r}
+length(final$outcome[final$outcome == "W"])
+length(final$outcome[final$outcome == "D"])
+length(final$outcome[final$outcome == "L"])
+```
+
+```{r}
+order <- c("L", "D", "W")
+final$outcome <- factor(final$outcome, levels = order)
+final %>%
+  ggplot(aes(x = outcome, y = shots_blocked, fill = outcome)) +
+  geom_boxplot() +
+  labs(y = "Proportion")
+
+final %>%
+  ggplot(aes(x = outcome, y = passes_blocked, fill = outcome)) +
+  geom_boxplot() +
+  labs(y = "Proportion")
+
+final %>%
+  ggplot(aes(x = outcome, y = tackle_success, fill = outcome)) +
+  geom_boxplot() +
+  labs(y = "Proportion")
+```
+
+
+
+
+#### Boxplots for each variable
+
+```{r}
+order <- c("L", "D", "W")
+final_graph = final %>%
+  rename('Shots Blocked' = shots_blocked,
+         'Passes Blocked' = passes_blocked,
+         'Tackle Success' = tackle_success)
+
+final_graph$outcome <- factor(final_graph$outcome, levels = order)
+
+# Reshape the data to long format
+final_long <- final_graph %>%
+  pivot_longer(cols = c('Shots Blocked', 'Passes Blocked', 'Tackle Success'),
+               names_to = "variable", values_to = "value")
+
+# Create a boxplot with facets and pattern-filled boxes
+plot = final_long %>%
+  ggplot(aes(x = outcome, y = value, pattern = outcome)) +
+  geom_boxplot_pattern() +
+  labs(x = "Did the Team Lose(L), Draw(D), or Win(W)",
+       y = "Proportion of Variable",
+       title = "Defense Variable Considered") +
+  facet_wrap(~ variable, scales = "free_y", ncol = 3)
+
+plot + theme(plot.title = element_text(hjust = 0.5))
+```
+
+#### Test for Normality of Differences
+
+```{r}
+# Normality of shots_blocked diff
+w_shots_blocked = final$shots_blocked[final$outcome == "W"]
+l_shots_blocked = final$shots_blocked[final$outcome == "L"]
+shots_blocked_diff = w_shots_blocked - l_shots_blocked
+
+qqnorm(shots_blocked_diff)
+qqline(shots_blocked_diff)
+
+shapiro.test(shots_blocked_diff)
+
+# Normality Test Failed --> Wilcoxon Test
+
+mean(shots_blocked_diff)
+
+wilcox.test(w_shots_blocked, l_shots_blocked, paired = TRUE, alternative = "greater")
+
+```
+
+```{r}
+sum((w_shots_blocked - l_shots_blocked) == 0)
+```
+
+```{r}
+# Normality of passes_blocked diff
+w_passes_blocked = final$passes_blocked[final$outcome == "W"]
+l_passes_blocked = final$passes_blocked[final$outcome == "L"]
+
+passes_blocked_diff = w_passes_blocked - l_passes_blocked
+
+qqnorm(passes_blocked_diff)
+qqline(passes_blocked_diff)
+
+shapiro.test(passes_blocked_diff)
+
+# Normality Test Failed --> Wilcoxon Test
+
+mean(passes_blocked_diff)
+
+wilcox.test(w_passes_blocked, l_passes_blocked, paired = TRUE, alternative = "greater")
+
+```
+
+```{r}
+# Normality of tackle_success diff
+w_tackle_success = final$tackle_success[final$outcome == "W"]
+l_tackle_success = final$tackle_success[final$outcome == "L"]
+
+tackle_success_diff = w_tackle_success - l_tackle_success
+
+qqnorm(tackle_success_diff)
+qqline(tackle_success_diff)
+
+shapiro.test(tackle_success_diff)
+
+# Normality Test Passes --> Paired t-test
+
+t.test(w_tackle_success, l_tackle_success, paired = TRUE, alternative = c("greater"))
+
+```
+

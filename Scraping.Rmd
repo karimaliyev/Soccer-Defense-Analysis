@@ -1,0 +1,115 @@
+---
+title: "Scraping"
+author: "Karim"
+date: "2023-10-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(worldfootballR)
+```
+
+### Scraping Defense Data from the web
+
+```{r cache = TRUE}
+epl_2023_urls <- fb_match_urls(country = "ENG", gender = "M", season_end_year = 2023, tier="1st")
+epl_2022_urls <- fb_match_urls(country = "ENG", gender = "M", season_end_year = 2022, tier="1st")
+epl_2021_urls <- fb_match_urls(country = "ENG", gender = "M", season_end_year = 2021, tier="1st")
+epl_2020_urls <- fb_match_urls(country = "ENG", gender = "M", season_end_year = 2020, tier="1st")
+epl_2019_urls <- fb_match_urls(country = "ENG", gender = "M", season_end_year = 2019, tier="1st")
+epl_2018_urls <- fb_match_urls(country = "ENG", gender = "M", season_end_year = 2018, tier="1st")
+```
+
+```{r cache = TRUE}
+defense_2023 = fb_advanced_match_stats(match_url = epl_2023_urls, stat_type = "defense", team_or_player = "team")
+
+defense_2022 = fb_advanced_match_stats(match_url = epl_2022_urls, stat_type = "defense", team_or_player = "team")
+
+defense_2021 = fb_advanced_match_stats(match_url = epl_2021_urls, stat_type = "defense", team_or_player = "team")
+
+defense_2020 = fb_advanced_match_stats(match_url = epl_2020_urls, stat_type = "defense", team_or_player = "team")
+
+defense_2019 = fb_advanced_match_stats(match_url = epl_2019_urls, stat_type = "defense", team_or_player = "team")
+
+defense_2018 = fb_advanced_match_stats(match_url = epl_2018_urls, stat_type = "defense", team_or_player = "team")
+
+
+write.csv(defense_2022, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\R Modules\\Paper Analysis\\Def2023.csv", row.names=TRUE)
+
+write.csv(defense_2022, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\R Modules\\Paper Analysis\\Def2022.csv", row.names=TRUE)
+
+write.csv(defense_2021, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\R Modules\\Paper Analysis\\Def2021.csv", row.names=TRUE)
+
+write.csv(defense_2020, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\R Modules\\Paper Analysis\\Def2020.csv", row.names=TRUE)
+
+write.csv(defense_2019, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\R Modules\\Paper Analysis\\Def2019.csv", row.names=TRUE)
+
+write.csv(defense_2018, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\R Modules\\Paper Analysis\\Def2018.csv", row.names=TRUE)
+```
+
+```{r, cache = TRUE}
+attack_2023 = fb_advanced_match_stats(match_url = epl_2023_urls, stat_type = "summary", team_or_player = "team")
+
+attack_2022 = fb_advanced_match_stats(match_url = epl_2022_urls, stat_type = "summary", team_or_player = "team")
+
+attack_2021 = fb_advanced_match_stats(match_url = epl_2021_urls, stat_type = "summary", team_or_player = "team")
+
+attack_2020 = fb_advanced_match_stats(match_url = epl_2020_urls, stat_type = "summary", team_or_player = "team")
+
+attack_2019 = fb_advanced_match_stats(match_url = epl_2019_urls, stat_type = "summary", team_or_player = "team")
+
+attack_2018 = fb_advanced_match_stats(match_url = epl_2018_urls, stat_type = "summary", team_or_player = "team")
+
+
+write.csv(attack_2023, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Att2023.csv", row.names=TRUE)
+
+write.csv(attackdefense_2022, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Att2022.csv", row.names=TRUE)
+
+write.csv(attack_2021, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Att2021.csv", row.names=TRUE)
+
+write.csv(attack_2020, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Att2020.csv", row.names=TRUE)
+
+write.csv(attack_2019, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Att2019.csv", row.names=TRUE)
+
+write.csv(attack_2018, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Att2018.csv", row.names=TRUE)
+```
+
+```{r, cache = TRUE}
+pass_2023 = fb_advanced_match_stats(match_url = epl_2023_urls, stat_type = "passing", team_or_player = "team")
+
+pass_2022 = fb_advanced_match_stats(match_url = epl_2022_urls, stat_type = "passing", team_or_player = "team")
+
+pass_2021 = fb_advanced_match_stats(match_url = epl_2021_urls, stat_type = "passing", team_or_player = "team")
+
+pass_2020 = fb_advanced_match_stats(match_url = epl_2020_urls, stat_type = "passing", team_or_player = "team")
+
+pass_2019 = fb_advanced_match_stats(match_url = epl_2019_urls, stat_type = "passing", team_or_player = "team")
+
+pass_2018 = fb_advanced_match_stats(match_url = epl_2018_urls, stat_type = "passing", team_or_player = "team")
+
+
+write.csv(pass_2023, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Pas2023.csv", row.names=TRUE)
+
+write.csv(pass_2022, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Pas2022.csv", row.names=TRUE)
+
+write.csv(pass_2021, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Pas2021.csv", row.names=TRUE)
+
+write.csv(pass_2020, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Pas2020.csv", row.names=TRUE)
+
+write.csv(pass_2019, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Pas2019.csv", row.names=TRUE)
+
+write.csv(pass_2018, "C:\\Users\\kerim\\OneDrive\\Desktop\\GEO 322E\\Paper Analysis\\Pas2018.csv", row.names=TRUE)
+```
+
+### Link with error, need to enter data manually for this game
+```{r}
+# The Error command
+#defense_2022 = rbind(defense_2022[1:348,],
+#                     fb_advanced_match_stats(match_url ="                                     #https://fbref.com/en/matches/ac4560d6/Tottenham-Hotspur-Crystal-Palace-December-26-2021-Premier-#League", stat_type = "defense", team_or_player = "team"),
+#                   defense_2022[-(1:348),])
+```
